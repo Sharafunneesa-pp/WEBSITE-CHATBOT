@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrinova-Shop Chatbot</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            background-color: #f7f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+            animation: fadeIn 1s ease;
+        }
+        h1 {
+            text-align: center;
+            background-color: #0d47a1;  /* Blue */
+            color: white;
+            margin: 0;
+            padding: 20px 0;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+        #chat_log {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-bottom: 2px solid #ddd;
+            background-color: #ffffff;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .user-message {
+            background-color: #c3e8f9;  /* Light Blue */
+            align-self: flex-end;
+        }
+        .bot-message {
+            background-color: #e3e3e3;  /* Light Gray */
+            align-self: flex-start;
+            color: #333;
+        }
+        #chat_form {
+            display: flex;
+            padding: 15px;
+            border-top: 2px solid #ddd;
+            background-color: #fff;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+        #user_input {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            font-size: 16px;
+            border-radius: 10px;
+            margin-right: 10px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        #user_input:focus {
+            border-color: #0d47a1;  /* Blue */
+        }
+        button[type="submit"] {
+            background-color: #0d47a1;  /* Blue */
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"]:hover {
+            background-color: #1a237e;  /* Darker Blue */
+        }
+
+        /* Add smooth fade-in effect */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            #container {
+                width: 95%;
+                height: 90vh;
+            }
+            h1 {
+                font-size: 22px;
+                padding: 15px 0;
+            }
+            .message {
+                max-width: 90%;
+            }
+            #user_input {
+                font-size: 14px;
+                padding: 10px;
+            }
+            button[type="submit"] {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            // Initialize chat history as an empty array
+            let chatHistory = [];
+
+            // Handle form submission
+            $('#chat_form').on('submit', function (event) {
+                event.preventDefault();
+                var userMessage = $('#user_input').val();
+                $('#user_input').val('');
+                if (userMessage.trim() !== '') {
+                    addMessage('user', userMessage);
+                    sendMessage(userMessage);
+                }
+            });
+
+            // Add message to the chat log
+            function addMessage(sender, message) {
+                var messageElement = $('<div class="message ' + sender + '-message"></div>').text(message);
+                $('#chat_log').append(messageElement);
+                scrollToBottom();
+            }
+
+            // Scroll to the bottom of the chat log
+            function scrollToBottom() {
+                $('#chat_log').scrollTop($('#chat_log')[0].scrollHeight);
+            }
+
+            // Send message to backend and receive response
+            function sendMessage(message) {
+                addMessage('bot', 'John is typing...');
+                $.ajax({
+                    type: 'POST',
+                    url: '/chat',
+                    data: {
+                        user_input: message,
+                        chat_history: JSON.stringify(chatHistory)  // Send chat history as JSON string
+                    },
+                    success: function (response) {
+                        // Remove typing indicator
+                        $('.bot-message').last().remove();
+                        // Add bot response
+                        addMessage('bot', response.response);
+                        // Update the chat history with both user and bot messages
+                        chatHistory = response.chat_history;
+                        // Optionally, display sources if available
+                        if (response.sources && response.sources.length > 0) {
+                            addMessage('bot', 'Sources: ' + response.sources.join(', '));
+                        }
+                    },
+                    error: function () {
+                        $('.bot-message').last().remove();
+                        addMessage('bot', 'Sorry, something went wrong.');
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="container">
+        <h1>Nutrinova-Shop Chatbot</h1>
+        <div id="chat_log">
+            <div class="message bot-message">
+                <p>Hello, I'm John, the sales representative for Nutrinova. How can I assist you today?</p>
+            </div>
+        </div>
+        <form id="chat_form" method="post">
+            <input type="text" id="user_input" autocomplete="off" placeholder="Type your message..." />
+            <button type="submit">Send</button>
+        </form>
+    </div>
+</body>
+</html>

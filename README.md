@@ -18,3 +18,5 @@ A website chatbot designed to:
 1. **Clone the Repository**:  
    ```bash
    git clone https://github.com/Sharafunneesa-pp/WEBSITE-CHATBOT.git
+2. Install dependencies:
+pip install -r requirements.txt

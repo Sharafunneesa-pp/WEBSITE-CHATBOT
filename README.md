@@ -2,7 +2,7 @@
 
 ---
 
-## **Objective**
+## **Features**
 
 A website chatbot designed to:  
 - 🌐 **Crawl and Extract Data**: Retrieve relevant information using **BeautifulSoup** from specified websites.  
